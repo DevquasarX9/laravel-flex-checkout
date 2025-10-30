@@ -1,0 +1,54 @@
+server {
+    listen 80 default;
+    server_name _ http2;
+
+    root /application/public;
+    index index.php index.html index.htm;
+    access_log /var/log/nginx/dev.log main;
+    error_log /var/log/nginx/dev.error.log warn;
+
+    if ($host ~* ^www\.(.*)) {
+      set $host_without_www $1;
+      rewrite ^(.*) http://$host_without_www$1 permanent;
+    }
+
+    location /health {
+      return 200;
+    }
+
+    location /nginx_status {
+      stub_status on;
+      access_log off;
+      allow 127.0.0.1;
+      deny all;
+    }
+
+    location ~ ^/(dev_status|dev_ping)$ {
+      fastcgi_split_path_info ^(.+\.php)(/.+)$;
+      fastcgi_pass php-fpm:9000;
+      fastcgi_index index.php;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      include fastcgi_params;
+      access_log off;
+      allow 127.0.0.1;
+      deny all;
+    }
+
+    location ~* \.(?:css|js|jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)(.+)$ {
+      expires 30d;
+      add_header Pragma public;
+      add_header Cache-Control "public";
+    }
+
+    location / {
+      try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+      fastcgi_split_path_info ^(.+\.php)(/.+)$;
+      fastcgi_pass php-fpm:9000;
+      fastcgi_index index.php;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      include fastcgi_params;
+    }
+}
