@@ -13,8 +13,9 @@ RUN for i in $(seq 1 8); do mkdir -p "/usr/share/man/man$i"; done
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
 # Install selected extensions and other stuff
-RUN apt-get update \
-    && apt-get install -y bash-completion build-essential git libjpeg-dev libfreetype6-dev libpng-dev libwebp-dev nano rsync  unzip
+RUN curl -sL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get update \
+    && apt-get install -y bash-completion build-essential git libjpeg-dev libfreetype6-dev libpng-dev libwebp-dev nano nodejs rsync unzip
 #    && pecl install xdebug
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && docker-php-ext-install gd
