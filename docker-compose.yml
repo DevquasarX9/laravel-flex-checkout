@@ -23,11 +23,9 @@ services:
       - ./:/application
       - ./docker/nginx/ssl:/etc/ssl
       - ./docker/nginx/templates/default.conf.template:/etc/nginx/conf.d/default.conf
-      - ./docker/nginx/templates/ssl-proxy.conf.template:/etc/nginx/conf.d/ssl-proxy.conf
     depends_on:
       - php-fpm
     ports:
-      - '80:80'
       - '443:443'
 
   php-fpm:

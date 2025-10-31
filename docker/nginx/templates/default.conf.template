@@ -1,11 +1,19 @@
 server {
-    listen 80 default;
+    listen 443 ssl default;
     server_name _ http2;
+
+    ssl_certificate /etc/ssl/certs/dev.crt;
+    ssl_certificate_key /etc/ssl/private/dev.key;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS;
+    ssl_prefer_server_ciphers on;
+
+    ssl_session_cache shared:SSL:20m;
+    ssl_session_timeout 60m;
+
 
     root /application/public;
     index index.php index.html index.htm;
-    access_log /var/log/nginx/dev.log main;
-    error_log /var/log/nginx/dev.error.log warn;
 
     if ($host ~* ^www\.(.*)) {
       set $host_without_www $1;
