@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class DatabaseSeeder extends Seeder
+final class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
@@ -24,5 +24,11 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
+        // Seed products and promotions
+        $this->call([
+            ProductSeeder::class,
+            PromotionSeeder::class,
+        ]);
     }
 }
