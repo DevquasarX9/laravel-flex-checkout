@@ -11,9 +11,19 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import checkout from '@/routes/checkout';
+import products from '@/routes/products';
+import promotions from '@/routes/promotions';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import {
+    BookOpen,
+    Folder,
+    LayoutGrid,
+    Package,
+    ShoppingCart,
+    Tag,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -21,6 +31,21 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Checkout',
+        href: checkout.index(),
+        icon: ShoppingCart,
+    },
+    {
+        title: 'Products',
+        href: products.index(),
+        icon: Package,
+    },
+    {
+        title: 'Promotions',
+        href: promotions.index(),
+        icon: Tag,
     },
 ];
 
