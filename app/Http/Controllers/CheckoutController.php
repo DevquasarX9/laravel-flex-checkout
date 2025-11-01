@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CheckoutRequest;
 use App\Models\Product;
 use App\Services\CheckoutService;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,26 +18,24 @@ final class CheckoutController extends Controller
     ) {
     }
 
-    /**
-     * Show the checkout form.
-     */
     public function index(): Response
     {
-        $products = Product::with('activePromotion')
-            ->active()
-            ->orderBy('sku')
-            ->get()
-            ->map->toCheckoutArray();
+        $products = Cache::remember(
+            'products.checkout',
+            now()->addMinutes(15),
+            static fn () => Product::with('activePromotion')
+                ->active()
+                ->orderBy('sku')
+                ->get()
+                ->map->toCheckoutArray()
+        );
 
         return Inertia::render('checkout/index', [
             'products' => $products,
         ]);
     }
 
-    /**
-     * Process the checkout.
-     */
-    public function store(CheckoutRequest $request)
+    public function store(CheckoutRequest $request): Response
     {
         try {
             $sale = $this->checkoutService->process(

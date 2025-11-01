@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Observers\ProductObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Collection;
 
+#[ObservedBy(ProductObserver::class)]
 final class Product extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'sku',
         'name',
@@ -19,15 +24,11 @@ final class Product extends Model
         'is_active',
     ];
 
-    /**
-     * Get active products formatted for list display.
-     */
-    public static function getActiveForList(): Collection
+    public function scopeForList(Builder $query): Builder
     {
-        return self::active()
+        return $query->active()
             ->orderBy('sku')
-            ->get()
-            ->map->toListArray();
+            ->select(['id', 'sku', 'name', 'unit_price']);
     }
 
     /**
@@ -73,19 +74,6 @@ final class Product extends Model
             'name' => $this->name,
             'unit_price' => (float) $this->unit_price,
             'promotion' => $this->activePromotion?->toPromotionArray(),
-        ];
-    }
-
-    /**
-     * Transform product to list array representation.
-     */
-    public function toListArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'sku' => $this->sku,
-            'name' => $this->name,
-            'unit_price' => (float) $this->unit_price,
         ];
     }
 

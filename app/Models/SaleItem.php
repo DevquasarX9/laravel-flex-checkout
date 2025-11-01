@@ -17,9 +17,6 @@ final class SaleItem extends Model
         'line_total',
     ];
 
-    /**
-     * Get the sale that owns this item.
-     */
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);

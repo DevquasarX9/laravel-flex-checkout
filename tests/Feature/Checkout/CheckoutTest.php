@@ -9,24 +9,20 @@ beforeEach(function () {
     $this->user = User::factory()->create();
 
     // Create test products
-    $productA = Product::create(['sku' => 'A', 'name' => 'Product A', 'unit_price' => 0.50, 'is_active' => true]);
-    $productB = Product::create(['sku' => 'B', 'name' => 'Product B', 'unit_price' => 0.30, 'is_active' => true]);
-    Product::create(['sku' => 'C', 'name' => 'Product C', 'unit_price' => 0.20, 'is_active' => true]);
-    Product::create(['sku' => 'D', 'name' => 'Product D', 'unit_price' => 0.10, 'is_active' => true]);
+    $productA = Product::factory()->withSku('A')->withPrice(0.50)->create(['name' => 'Product A']);
+    $productB = Product::factory()->withSku('B')->withPrice(0.30)->create(['name' => 'Product B']);
+    Product::factory()->withSku('C')->withPrice(0.20)->create(['name' => 'Product C']);
+    Product::factory()->withSku('D')->withPrice(0.10)->create(['name' => 'Product D']);
 
     // Create promotions
-    Promotion::create([
-        'product_id' => $productA->id,
+    Promotion::factory()->forProduct($productA)->create([
         'quantity' => 3,
         'special_price' => 1.30,
-        'is_active' => true,
     ]);
 
-    Promotion::create([
-        'product_id' => $productB->id,
+    Promotion::factory()->forProduct($productB)->create([
         'quantity' => 2,
         'special_price' => 0.45,
-        'is_active' => true,
     ]);
 });
 

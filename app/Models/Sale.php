@@ -24,9 +24,6 @@ final class Sale extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get all items for this sale.
-     */
     public function items(): HasMany
     {
         return $this->hasMany(SaleItem::class);

@@ -8,24 +8,20 @@ uses()->group('checkout');
 
 beforeEach(function () {
     // Create test products
-    $productA = Product::create(['sku' => 'A', 'name' => 'Product A', 'unit_price' => 0.50, 'is_active' => true]);
-    $productB = Product::create(['sku' => 'B', 'name' => 'Product B', 'unit_price' => 0.30, 'is_active' => true]);
-    Product::create(['sku' => 'C', 'name' => 'Product C', 'unit_price' => 0.20, 'is_active' => true]);
-    Product::create(['sku' => 'D', 'name' => 'Product D', 'unit_price' => 0.10, 'is_active' => true]);
+    $productA = Product::factory()->withSku('A')->withPrice(0.50)->create(['name' => 'Product A']);
+    $productB = Product::factory()->withSku('B')->withPrice(0.30)->create(['name' => 'Product B']);
+    Product::factory()->withSku('C')->withPrice(0.20)->create(['name' => 'Product C']);
+    Product::factory()->withSku('D')->withPrice(0.10)->create(['name' => 'Product D']);
 
     // Create promotions
-    Promotion::create([
-        'product_id' => $productA->id,
+    Promotion::factory()->forProduct($productA)->create([
         'quantity' => 3,
         'special_price' => 1.30,
-        'is_active' => true,
     ]);
 
-    Promotion::create([
-        'product_id' => $productB->id,
+    Promotion::factory()->forProduct($productB)->create([
         'quantity' => 2,
         'special_price' => 0.45,
-        'is_active' => true,
     ]);
 
     $this->service = new CheckoutService;
@@ -115,7 +111,7 @@ test('price 1xD, 3xA, 2xB returns 1.85 (order independent)', function () {
 
 test('handles invalid sku', function () {
     $this->service->calculate([['sku' => 'Z', 'quantity' => 1]]);
-})->throws(Exception::class, 'Invalid SKU: Z');
+})->throws(Exception::class, "Product with SKU 'Z' not found or is inactive.");
 
 test('calculation returns correct breakdown', function () {
     $result = $this->service->calculate([['sku' => 'A', 'quantity' => 3]]);
