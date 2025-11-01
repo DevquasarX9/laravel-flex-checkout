@@ -49,13 +49,7 @@ final class ProductController extends Controller
     public function edit(Product $product): Response
     {
         return Inertia::render('products/edit', [
-            'product' => [
-                'id' => $product->id,
-                'sku' => $product->sku,
-                'name' => $product->name,
-                'unit_price' => (float) $product->unit_price,
-                'is_active' => $product->is_active,
-            ],
+            'product' => new ProductResource($product)->resolve(),
         ]);
     }
 

@@ -13,6 +13,10 @@ final class PromotionResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'product_id' => $this->when(
+                ! $this->relationLoaded('product'),
+                $this->product_id
+            ),
             'quantity' => $this->quantity,
             'special_price' => (float) $this->special_price,
             'is_active' => $this->when(

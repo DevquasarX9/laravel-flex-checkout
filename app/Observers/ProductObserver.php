@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Models\Product;
+use App\Support\CacheKeys;
 use Illuminate\Support\Facades\Cache;
 
 final class ProductObserver
@@ -21,6 +22,6 @@ final class ProductObserver
 
     private function clearCache(): void
     {
-        Cache::forget('products.checkout');
+        Cache::forget(CacheKeys::CHECKOUT_PRODUCTS);
     }
 }
