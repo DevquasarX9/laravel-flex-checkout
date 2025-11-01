@@ -18,6 +18,9 @@ pest()->extend(Tests\TestCase::class)
 pest()->extend(Tests\TestCase::class)
     ->in('Unit');
 
+// Architecture tests configuration
+pest()->group('architecture')->in('Architecture');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
