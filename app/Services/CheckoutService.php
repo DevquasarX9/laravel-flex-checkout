@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Exceptions\InvalidSkuException;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -16,7 +17,7 @@ final class CheckoutService
     /**
      * Calculate the total price for the given items.
      *
-     * @throws \Exception
+     * @throws InvalidSkuException
      */
     public function calculate(array $items): array
     {
@@ -66,11 +67,6 @@ final class CheckoutService
         });
     }
 
-    /**
-     * Build item counts from array input.
-     *
-     * @throws \Exception
-     */
     private function buildItemCounts(array $items): array
     {
         $counts = [];
@@ -87,7 +83,7 @@ final class CheckoutService
     /**
      * Fetch products and validate all SKUs exist.
      *
-     * @throws \Exception
+     * @throws InvalidSkuException
      */
     private function fetchAndValidateProducts(array $skus): Collection
     {
@@ -97,10 +93,17 @@ final class CheckoutService
             ->get()
             ->keyBy('sku');
 
+        $invalidSkus = [];
         foreach ($skus as $sku) {
             if (! $products->has($sku)) {
-                throw new \Exception("Invalid SKU: {$sku}");
+                $invalidSkus[] = $sku;
             }
+        }
+
+        if (count($invalidSkus) > 0) {
+            throw count($invalidSkus) === 1
+                ? InvalidSkuException::forSku($invalidSkus[0])
+                : InvalidSkuException::forMultipleSkus($invalidSkus);
         }
 
         return $products;

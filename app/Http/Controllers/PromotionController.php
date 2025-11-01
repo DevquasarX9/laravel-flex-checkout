@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Promotions\ActivatePromotion;
 use App\Http\Requests\PromotionRequest;
+use App\Http\Resources\PromotionResource;
 use App\Models\Product;
 use App\Models\Promotion;
 use Illuminate\Http\RedirectResponse;
@@ -14,37 +16,22 @@ use Inertia\Response;
 
 final class PromotionController extends Controller
 {
-    /**
-     * Display a listing of promotions.
-     */
+    public function __construct(
+        private readonly ActivatePromotion $activatePromotion
+    ) {
+    }
+
     public function index(): Response
     {
         $promotions = Promotion::with('product')
             ->orderBy('created_at', 'desc')
-            ->paginate(15)
-            ->through(function ($promotion) {
-                return [
-                    'id' => $promotion->id,
-                    'product' => [
-                        'id' => $promotion->product->id,
-                        'sku' => $promotion->product->sku,
-                        'name' => $promotion->product->name,
-                        'unit_price' => (float) $promotion->product->unit_price,
-                    ],
-                    'quantity' => $promotion->quantity,
-                    'special_price' => (float) $promotion->special_price,
-                    'is_active' => $promotion->is_active,
-                ];
-            });
+            ->paginate(15);
 
         return Inertia::render('promotions/index', [
-            'promotions' => $promotions,
+            'promotions' => PromotionResource::collection($promotions),
         ]);
     }
 
-    /**
-     * Show the form for creating a new promotion.
-     */
     public function create(): Response
     {
         return Inertia::render('promotions/create', [
@@ -53,45 +40,25 @@ final class PromotionController extends Controller
     }
 
     /**
-     * Store a newly created promotion in storage.
+     * @throws \Throwable
      */
     public function store(PromotionRequest $request): RedirectResponse
     {
-        // Deactivate existing active promotions for this product
-        Promotion::where('product_id', $request->product_id)
-            ->where('is_active', true)
-            ->update(['is_active' => false]);
-
-        Promotion::create($request->validated());
+        $this->activatePromotion->execute($request->validated());
 
         return redirect()->route('promotions.index')
             ->with('success', 'Promotion created successfully.');
     }
 
-    /**
-     * Display the specified promotion.
-     */
     public function show(Promotion $promotion): Response
     {
+        $promotion->load('product');
+
         return Inertia::render('promotions/show', [
-            'promotion' => [
-                'id' => $promotion->id,
-                'product' => [
-                    'id' => $promotion->product->id,
-                    'sku' => $promotion->product->sku,
-                    'name' => $promotion->product->name,
-                    'unit_price' => (float) $promotion->product->unit_price,
-                ],
-                'quantity' => $promotion->quantity,
-                'special_price' => (float) $promotion->special_price,
-                'is_active' => $promotion->is_active,
-            ],
+            'promotion' => new PromotionResource($promotion),
         ]);
     }
 
-    /**
-     * Show the form for editing the specified promotion.
-     */
     public function edit(Promotion $promotion): Response
     {
         return Inertia::render('promotions/edit', [
@@ -106,9 +73,6 @@ final class PromotionController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified promotion in storage.
-     */
     public function update(PromotionRequest $request, Promotion $promotion): RedirectResponse
     {
         $promotion->update($request->validated());
@@ -117,9 +81,6 @@ final class PromotionController extends Controller
             ->with('success', 'Promotion updated successfully.');
     }
 
-    /**
-     * Remove the specified promotion from storage.
-     */
     public function destroy(Promotion $promotion): RedirectResponse
     {
         $promotion->delete();
@@ -128,11 +89,15 @@ final class PromotionController extends Controller
             ->with('success', 'Promotion deleted successfully.');
     }
 
-    /**
-     * Get active products list for dropdowns.
-     */
     private function getActiveProductsList(): Collection
     {
-        return Product::getActiveForList();
+        return Product::forList()
+            ->get()
+            ->map(fn ($product) => [
+                'id' => $product->id,
+                'sku' => $product->sku,
+                'name' => $product->name,
+                'unit_price' => (float) $product->unit_price,
+            ]);
     }
 }
