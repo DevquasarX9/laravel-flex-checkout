@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CheckoutRequest;
 use App\Models\Product;
 use App\Services\CheckoutService;
+use App\Support\CacheKeys;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,8 +22,8 @@ final class CheckoutController extends Controller
     public function index(): Response
     {
         $products = Cache::remember(
-            'products.checkout',
-            now()->addMinutes(15),
+            CacheKeys::CHECKOUT_PRODUCTS,
+            now()->addMinutes(CacheKeys::CHECKOUT_PRODUCTS_TTL),
             static fn () => Product::with('activePromotion')
                 ->active()
                 ->orderBy('sku')

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Models\Product;
+use App\Rules\PromotionMustBeCheaper;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class PromotionRequest extends FormRequest
@@ -25,31 +25,8 @@ final class PromotionRequest extends FormRequest
         return [
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:2',
-            'special_price' => 'required|numeric|min:0|decimal:0,2',
+            'special_price' => ['required', 'numeric', 'min:0', 'decimal:0,2', new PromotionMustBeCheaper],
             'is_active' => 'boolean',
         ];
-    }
-
-    /**
-     * Configure the validator instance.
-     */
-    public function withValidator($validator): void
-    {
-        $validator->after(function ($validator) {
-            if ($this->product_id && $this->quantity && $this->special_price) {
-                $product = Product::find($this->product_id);
-
-                if ($product) {
-                    $regularTotal = $product->unit_price * $this->quantity;
-
-                    if ($this->special_price >= $regularTotal) {
-                        $validator->errors()->add(
-                            'special_price',
-                            'The special price must be less than the regular price ('.number_format($regularTotal, 2).').'
-                        );
-                    }
-                }
-            }
-        });
     }
 }

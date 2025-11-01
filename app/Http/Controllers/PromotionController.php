@@ -6,11 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\Promotions\ActivatePromotion;
 use App\Http\Requests\PromotionRequest;
+use App\Http\Resources\ProductListResource;
 use App\Http\Resources\PromotionResource;
 use App\Models\Product;
 use App\Models\Promotion;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -62,13 +62,7 @@ final class PromotionController extends Controller
     public function edit(Promotion $promotion): Response
     {
         return Inertia::render('promotions/edit', [
-            'promotion' => [
-                'id' => $promotion->id,
-                'product_id' => $promotion->product_id,
-                'quantity' => $promotion->quantity,
-                'special_price' => (float) $promotion->special_price,
-                'is_active' => $promotion->is_active,
-            ],
+            'promotion' => new PromotionResource($promotion)->resolve(),
             'products' => $this->getActiveProductsList(),
         ]);
     }
@@ -89,15 +83,10 @@ final class PromotionController extends Controller
             ->with('success', 'Promotion deleted successfully.');
     }
 
-    private function getActiveProductsList(): Collection
+    private function getActiveProductsList(): array
     {
-        return Product::forList()
-            ->get()
-            ->map(fn ($product) => [
-                'id' => $product->id,
-                'sku' => $product->sku,
-                'name' => $product->name,
-                'unit_price' => (float) $product->unit_price,
-            ]);
+        return ProductListResource::collection(
+            Product::forList()->get()
+        )->resolve();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Models\Promotion;
+use App\Support\CacheKeys;
 use Illuminate\Support\Facades\Cache;
 
 final class PromotionObserver
@@ -21,6 +22,6 @@ final class PromotionObserver
 
     private function clearCache(): void
     {
-        Cache::forget('products.checkout');
+        Cache::forget(CacheKeys::CHECKOUT_PRODUCTS);
     }
 }

@@ -22,13 +22,21 @@ final class SaleItem extends Model
         return $this->belongsTo(Sale::class);
     }
 
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'sku', 'sku');
+    }
+
     /**
      * Transform sale item to Inertia array representation.
      */
     public function toInertiaArray(): array
     {
-        // Try to get current product for additional details
-        $product = Product::where('sku', $this->sku)->first();
+        // Use eager-loaded product if available, otherwise query
+        $product = $this->relationLoaded('product')
+            ? $this->product
+            : Product::where('sku', $this->sku)->first();
+
         $unitPrice = $product ? (float) $product->unit_price : 0;
         $regularTotal = $unitPrice * $this->quantity;
         $savings = max(0, $regularTotal - (float) $this->line_total);
@@ -37,7 +45,10 @@ final class SaleItem extends Model
         // Get current active promotion if exists
         $promotion = null;
         if ($product && $promotionApplied) {
-            $activePromotion = $product->activePromotion;
+            $activePromotion = $product->relationLoaded('activePromotion')
+                ? $product->activePromotion
+                : $product->activePromotion()->first();
+
             if ($activePromotion) {
                 $promotion = $activePromotion->toPromotionArray();
             }

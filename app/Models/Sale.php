@@ -34,6 +34,11 @@ final class Sale extends Model
      */
     public function toInertiaArray(): array
     {
+        // Eager load products if not already loaded to prevent N+1
+        if (! $this->relationLoaded('items.product.activePromotion')) {
+            $this->load('items.product.activePromotion');
+        }
+
         $items = $this->items->map->toInertiaArray();
         $regularTotal = $items->sum('regular_total');
         $totalSavings = $items->sum('savings');

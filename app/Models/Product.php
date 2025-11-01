@@ -80,9 +80,9 @@ final class Product extends Model
     /**
      * Scope to only include active products.
      */
-    public function scopeActive(Builder $query): void
+    public function scopeActive(Builder $query): Builder
     {
-        $query->where('is_active', true);
+        return $query->where('is_active', true);
     }
 
     protected function casts(): array
