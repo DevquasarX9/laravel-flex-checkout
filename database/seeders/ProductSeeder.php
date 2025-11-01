@@ -34,7 +34,7 @@ final class ProductSeeder extends Seeder
             [
                 'sku' => 'D',
                 'name' => 'Donut',
-                'unit_price' => 0.15,
+                'unit_price' => 0.10,
                 'is_active' => true,
             ],
 
